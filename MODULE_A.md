@@ -119,6 +119,32 @@
 <img src="./img/a/image201.png">
 <img src="./img/a/image202.png">
 <img src="./img/a/image203.png">
+3. Отрываем NAS
+4. Нажимаем E, чтобы поменять код загрузчика.
+5. Ищем строки, как на скрине, меняем test на boot
+<img src="./img/a/image204.png">
+<img src="./img/a/image205.png">
+6. Нажимаем F10 и грузимся в систему
+7. На текущем образе NAS логин adam, а пароль 123u (В задании, возможно, будут другие данные)
+8. Проверяем статус работы ftp (vsftpd, должна быть строчка Active: Active, если Active: Inactive, то смотрим ниже)
+Логинимся под админом
+```bash
+sudo su
+```
+Попросит пароль, вводим его. Теперь не придётся каждый раз писать sudo перед командой. 
+
+```bash
+systemctl status vsftpd
+```
+
+- Если не работает:
+```bash
+systemctl start vsftpd
+```
+Либо просто включаем сервис ssh, чтобы подключиться по sftp (systemctl start ssh). Гайд на подключение по sftp внизу.
+9. Подключаемся по FileZilla к серверу и выкачиваем все файлы на клиента.
+<img src="./img/a/image206.png">
+
 ### Установка виртуальных машин
 1. Перейти в **Virtual Machines → Create/Register VM**
 2. Выбрать **Create a new virtual machine**
