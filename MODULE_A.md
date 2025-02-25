@@ -113,6 +113,12 @@
 5. Создать группу **LAN** и привязать к `LAN switch`
 <img src="./img/a/image101.png">
 
+### Скачиваем файлы с NAS
+1. Перейти в **Virtual Machines → Create/Register VM**
+2. Дальше по скринам
+<img src="./img/a/image201.png">
+<img src="./img/a/image202.png">
+<img src="./img/a/image203.png">
 ### Установка виртуальных машин
 1. Перейти в **Virtual Machines → Create/Register VM**
 2. Выбрать **Create a new virtual machine**
