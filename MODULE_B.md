@@ -217,6 +217,9 @@ sudo systemctl enable apache2
 ```
 После этого в браузере по нашему IP должен открываться сайт.
 
+<img src="./img/b/image12.png">
+<img src="./img/b/image13.png">
+
 ### Настройка базы данных для Wordpress
 
 Заполните настройки базы данных в Wordpress. Если возникает ошибка, выполните:
@@ -226,6 +229,10 @@ sudo chown www-data:www-data -R ./html
 После этого, в браузере нажмите «Вперед», затем заполните регистрационную форму. Логин и пароль ставим — **admin**. Почту любую
 
 ---
+
+<img src="./img/b/image16.png">
+
+<img src="./img/b/image17.png">
 
 ## Установка Prometheus
 
@@ -305,6 +312,8 @@ sudo systemctl status prometheus
 ```
 Prometheus теперь доступен на порту `9090`.
 
+<img src="./img/b/image24.png">
+
 Если папка с Prometheus "мозолит глаза", её можно удалить:
 ```bash
 sudo rm <папка> -R
@@ -326,9 +335,28 @@ sudo rm <папка> -R
    ```
 Grafana доступна по порту `3000`. Логин и пароль — **admin**.
 
-После входа нажмите на значок с тремя линиями для доступа к настройкам, затем перейдите на главный экран.
+<img src="./img/b/image29.png">
+
+После входа нажмите на значок с тремя линиями для доступа к настройкам.
+
+<img src="./img/b/image31.png">
+<img src="./img/b/image32.png">
+<img src="./img/b/image33.png">
+<img src="./img/b/image34.png">
+<img src="./img/b/image35.png">
+<img src="./img/b/image36.png">
+<img src="./img/b/image37.png">
+<img src="./img/b/image38.png">
+<img src="./img/b/image39.png">
+<img src="./img/b/image40.png">
+<img src="./img/b/image41.png">
+<img src="./img/b/image42.png">
+
+Тут выбираем наш dashboard
 
 ---
+
+
 
 ## Синхронизация и файерволы
 
