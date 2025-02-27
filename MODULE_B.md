@@ -372,8 +372,11 @@ sudo rsync -avz /var/www/html/ team_X@192.168.X.2:/var/www/html
 
 На машине 192.168.X.2 выполняем команды:
 
+```bash
 ssh-keygen -t rsa -b 4096
 ssh-copy-id team_1@192.168.X.1
+sudo chown team_1:team_1 -R /var/www/html
+```
 
 Возвращаемся обратно на нашу первую машину, на ней в папке /home/team_x/scripts/ создаём скрипт sync.sh
 
@@ -381,7 +384,7 @@ ssh-copy-id team_1@192.168.X.1
 
 ```bash
 #!/bin/bash
-sudo rsync -avz /var/www/html/ team_X@192.168.X.2:/var/www/html
+rsync -avz /var/www/html/ team_X@192.168.X.2:/var/www/html
 ```
 
 Пробуем его запустить через sh sync.sh (если не просит пароль, значит всё хорошо)
