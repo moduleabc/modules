@@ -111,3 +111,51 @@
 
 * Настраиваем 1C предприятие по видео (ЕСЛИ БУДЕТЕ ПЕРЕКИДЫВАТЬ ИНФОРМАЦИОННУЮ БАЗУ НА КОМП КЛИЕНТА, ТО УКАЗЫВАЕМ WAN АЙПИ ВМЕСТО localhost)
 <img src="./img/c/vlc_CqaC3vwTRW.gif">
+
+# Настраиваем Apache2
+
+[Гайд/Источник](https://maxiplace.ru/blog/bitrix/veb-publikaciya-1s-osnovnye-aspekty/)
+
+* Скачиваем Apache по [ссылке](https://www.apachelounge.com/download/) ФАЙЛ (httpd-2.4.63-250207-win64-VS17.zip)
+* Закидываем папку Apache24 из архива на диск C
+* Не забываем удалить файл index.html из C:\Apache24\htdocs
+* Открываем PowerShell и прописываем
+```bash
+C:\Apache24\bin\httpd.exe -k install
+New-NetFirewallRule -DisplayName "Apache 2.4" -Direction Inbound -Action Allow -EdgeTraversalPolicy Allow -Protocol TCP -LocalPort 80,443
+```
+
+* Тут обе галочки
+<img src="./img/c/image3007.png">
+
+* В поиске пишем "Службы" и запускаем службу Apache 2.4 (ПКМ ПО СЛУЖБЕ > Запустить)
+* В проводнике переходим в Диск C > Program Files > 1cv8 > ТУТ_ВЕРСИЯ_1С > bin
+* Копируем сверху путь до папки
+* В cmd или powershell пишем cd этот_путь_сюда
+* Выполняем команду
+```bash
+webinst -publish -apache24 -wsdir test -dir "C:\Apache24\htdocs" -connstr "Srvr=localhost;Ref=ТУТ_ВСТАВИТЬ_НАЗВАНИЕ_ИНФОРМАЦИОННОЙ_БАЗЫ(db в моём случае)"
+C:\Apache24\bin\httpd.exe -k restart
+```
+* Переходим по нашему WAN айпи и проверяем работу (возможно придётся добавить /test в конец ссылки)
+
+# Ставим Prometheus на Windows
+
+[Гайд/Источник](https://ultravds.com/blog/kak-ustanovit-prometheus-na-windows-server/)
+
+* Открываем прошлый гайд и скачиваем Prometheus, но уже под виндовс
+* Папку внутри архива на диск C
+* Скачиваем программу (NSSM)[https://nssm.cc/download]
+* Папку внутри архива с NSSM на диск C
+* Дальше в cmd или Powershell cd C:\nssm-2.24\win64
+* Потом команду nssm install Prometheus
+* В окне выбираем файл prometheus.exe
+* В Arguments --config.file=prometheus.yml
+* Нажимаем Install Service
+* Переходим в службы и включаем службу Prometheus
+* Нажимаем Win + R и пишем firewall.cpl
+* Выбираем "Дополнительные Параметры"
+* Слево "Правила Для Входящих подключений"
+* Справо "Создать Правило"
+* Выбираем "Для Порта" > Определённые локальные порты (9090) > Далее > Далее > Имя Prometheus
+* В Grafana подключаем наш Prometheus
