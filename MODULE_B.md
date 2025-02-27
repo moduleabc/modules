@@ -152,3 +152,226 @@ exit
 
 
 На этом модуль **Б1** завершён.
+
+# МОДУЛЬ Б2
+
+На виртуальной машине **№1 и №2** необходимо установить из репозиториев через пакетный менеджер веб-сервер **LAMP**. Реализовать балансировку серверов и синхронизацию данных между машинами (например, через `rsync`). Настроить встроенный firewall для доступа к веб-странице. Из образа файлового хранилища установить **CMS Wordpress**, подключить к нему базу данных с виртуальных машин **№3 и №4**, после чего установить на него шаблон.
+
+Также необходимо реализовать **мониторинг серверов**. Рекомендуемый способ — установить приложения **Grafana** и **Prometheus** из папки с дистрибутивами. Разместить компоненты мониторинга на всех серверах, а сервер мониторинга разместить на виртуальных машинах **№1 и №2**. Обеспечить доступ к странице мониторинга на порту `3000`. Показатели мониторинга с виртуальных машин должны выводиться на экране.
+
+---
+
+## Установка LAMP
+
+**Запускаем `web-team-01`**  
+*(Если вы такой же крутой, как Аарон, можете использовать PuTTY)*  
+[Ссылка для установки LAMP на Ubuntu](https://selectel.ru/blog/lamp-install-ubuntu/)
+
+Устанавливаем необходимые пакеты:
+```bash
+sudo apt install tasksel
+sudo tasksel
+```
+*Выбираем веб-сервер.*
+
+Устанавливаем MySQL:
+```bash
+sudo apt install mysql-server
+sudo mysql
+```
+Внутри MySQL создаем пользователя:
+```sql
+CREATE USER 'userdbX'@'localhost' IDENTIFIED BY 'passw0rd!X';  -- X ваш номер
+GRANT ALL ON *.* TO 'userdbX'@'localhost';
+EXIT;
+```
+
+---
+
+## PHP и установка Wordpress
+
+Устанавливаем PHP и необходимые модули:
+```bash
+sudo apt install php libapache2-mod-php php-mysql
+```
+
+Подключаемся к FileZilla через левый верхний квадратик по SSH. **Wordpress** находится в архиве (файлы от НАСА). Разархивируйте архив с Wordpress и переместите все файлы в каталог:
+```bash
+cd /var/www/html
+```
+
+### Удаление index.html заглушки
+Если не получается удалить, нужно получить права на виртуальной машине:
+```bash
+cd /var/www/
+ls
+ls -la
+sudo chown team_X:team_X -R ./html
+```
+Теперь удалите заглушку и переместите файлы из папки с Wordpress.
+
+Перезапускаем Apache:
+```bash
+sudo systemctl restart apache2
+sudo systemctl enable apache2
+```
+После этого в браузере по нашему IP должен открываться сайт.
+
+### Настройка базы данных для Wordpress
+Заходим в виртуалку (например, **team 1**):
+```bash
+sudo mysql
+CREATE DATABASE webdb;
+EXIT;
+```
+Заполните настройки базы данных в Wordpress. Если возникает ошибка, выполните:
+```bash
+sudo chown www-data:www-data -R ./html
+```
+После этого, в браузере нажмите «Вперед», затем заполните регистрационную форму. Логин и пароль по умолчанию — **admin**.
+
+---
+
+## Установка Prometheus
+
+### Скачка Prometheus
+
+Рекомендуемые ссылки:
+- [Инструкция от Timeweb](https://timeweb.cloud/tutorials/servers/ustanovka-i-nastrojka-prometheus)
+- [Официальный сайт Prometheus](https://prometheus.io/download/)
+- [GitHub releases Prometheus](https://github.com/prometheus/prometheus/releases/)
+
+Выберите версию под Linux (amd64) и скачайте её.
+
+Открываем FileZilla и переносим скачанный архив Prometheus на сервер по пути:
+```
+/etc/home/team_X
+```
+*(Можно создать отдельную папку, например, `archives`.)*
+
+> **Важно:** Скачиваем Prometheus на все 4 машины. **Grafana** устанавливаем только на 2 веб-сервера.
+
+### Установка Prometheus
+
+Заходим в виртуальную машину:
+```bash
+cd ~
+ls
+cd archives/
+sudo tar -xzf <название_архива>
+```
+Удаляем архив после распаковки:
+```bash
+sudo rm <название_архива>
+```
+Переходим в распакованную папку (например, название начинается с `prometheus`):
+```bash
+cd prometheus*
+```
+Перемещаем бинарные файлы:
+```bash
+sudo mv prometheus /usr/local/bin
+sudo mv promtool /usr/local/bin
+```
+Создаем каталог для конфигурационных файлов:
+```bash
+sudo mkdir /etc/prometheus
+sudo mv prometheus.yml /etc/prometheus
+```
+Создаем сервис Prometheus:
+```bash
+sudo nano /etc/systemd/system/prometheus.service
+```
+Вставляем следующее содержимое:
+```
+[Unit]
+Description=Background service of Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+  --config.file /etc/prometheus/prometheus.yml \
+  --storage.tsdb.path /var/lib/prometheus/
+
+[Install]
+WantedBy=multi-user.target
+```
+Сохраняем файл и выходим.
+
+Далее в консоли:
+```bash
+sudo mkdir /var/lib/prometheus
+sudo systemctl daemon-reload
+sudo systemctl enable prometheus
+sudo systemctl start prometheus
+sudo systemctl status prometheus
+```
+Prometheus теперь доступен на порту `9090`.
+
+Если папка с Prometheus "мозолит глаза", её можно удалить:
+```bash
+sudo rm <папка> -R
+```
+
+---
+
+## Установка Grafana
+
+Устанавливаем Grafana (файлы от НАСА):
+
+1. Переносим архив Grafana через FileZilla в папку `archives`.
+2. Выполняем в консоли:
+   ```bash
+   sudo apt install adduser libfontconfig1 musl -y
+   sudo dpkg -i grafana-enterprise_10.0.2_amd64.deb
+   sudo systemctl enable grafana-server
+   sudo systemctl start grafana-server
+   ```
+Grafana доступна по порту `3000`. Логин и пароль — **admin**.
+
+После входа нажмите на значок с тремя линиями для доступа к настройкам, затем перейдите на главный экран.
+
+---
+
+## Синхронизация и файерволы
+
+### Файерволы на веб-серверах
+
+На веб-серверах выполните:
+```bash
+sudo ufw allow 80
+sudo ufw allow 443
+sudo ufw allow 3306
+sudo ufw allow 9090
+sudo ufw allow 3000
+sudo ufw allow 22
+sudo ufw enable
+```
+
+### Синхронизация данных через rsync
+
+На любом веб-сервере создайте папку `scripts`:
+```bash
+mkdir -p scripts
+```
+Проверьте наличие папки:
+```bash
+ls
+cd ..
+ls   # убедитесь, что папка scripts присутствует
+cd scripts
+```
+Запустите синхронизацию:
+```bash
+sudo rsync -avz /var/www/html/ team_X@192.168.2.2:/home/team_1/html
+```
+> **Примечание:**  
+> Формат команды:  
+> `rsync -avz <откуда копируем> <пользователь и IP сервера>:<куда сохранять>`  
+>  
+> Для проверки синхронизации, перейдите на веб-сервер команды Team по IP (например, `192.168.1.31`).
+
+---
+
