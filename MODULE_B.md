@@ -164,7 +164,6 @@ exit
 ## Установка LAMP
 
 **Запускаем `web-team-01`**  
-*(Если вы такой же крутой, как Аарон, можете использовать PuTTY)*  
 [Ссылка для установки LAMP на Ubuntu](https://selectel.ru/blog/lamp-install-ubuntu/)
 
 Устанавливаем необходимые пакеты:
@@ -179,10 +178,11 @@ sudo tasksel
 sudo apt install mysql-server
 sudo mysql
 ```
-Внутри MySQL создаем пользователя:
+Внутри MySQL создаем пользователя и БД:
 ```sql
 CREATE USER 'userdbX'@'localhost' IDENTIFIED BY 'passw0rd!X';  -- X ваш номер
 GRANT ALL ON *.* TO 'userdbX'@'localhost';
+CREATE DATABASE webdb;
 EXIT;
 ```
 
@@ -218,17 +218,12 @@ sudo systemctl enable apache2
 После этого в браузере по нашему IP должен открываться сайт.
 
 ### Настройка базы данных для Wordpress
-Заходим в виртуалку (например, **team 1**):
-```bash
-sudo mysql
-CREATE DATABASE webdb;
-EXIT;
-```
+
 Заполните настройки базы данных в Wordpress. Если возникает ошибка, выполните:
 ```bash
 sudo chown www-data:www-data -R ./html
 ```
-После этого, в браузере нажмите «Вперед», затем заполните регистрационную форму. Логин и пароль по умолчанию — **admin**.
+После этого, в браузере нажмите «Вперед», затем заполните регистрационную форму. Логин и пароль ставим — **admin**. Почту любую
 
 ---
 
@@ -277,6 +272,7 @@ sudo mv promtool /usr/local/bin
 ```bash
 sudo mkdir /etc/prometheus
 sudo mv prometheus.yml /etc/prometheus
+sudo mkdir /var/lib/prometheus
 ```
 Создаем сервис Prometheus:
 ```bash
@@ -302,7 +298,6 @@ WantedBy=multi-user.target
 
 Далее в консоли:
 ```bash
-sudo mkdir /var/lib/prometheus
 sudo systemctl daemon-reload
 sudo systemctl enable prometheus
 sudo systemctl start prometheus
@@ -363,15 +358,46 @@ cd ..
 ls   # убедитесь, что папка scripts присутствует
 cd scripts
 ```
-Запустите синхронизацию:
+
+
+
+Запустите тестовую синхронизацию:
 ```bash
-sudo rsync -avz /var/www/html/ team_X@192.168.2.2:/home/team_1/html
+sudo rsync -avz /var/www/html/ team_X@192.168.X.2:/var/www/html
 ```
 > **Примечание:**  
 > Формат команды:  
 > `rsync -avz <откуда копируем> <пользователь и IP сервера>:<куда сохранять>`  
 >  
-> Для проверки синхронизации, перейдите на веб-сервер команды Team по IP (например, `192.168.1.31`).
 
----
+На машине 192.168.X.2 выполняем команды:
+
+ssh-keygen -t rsa -b 4096
+ssh-copy-id team_1@192.168.X.1
+
+Возвращаемся обратно на нашу первую машину, на ней в папке /home/team_x/scripts/ создаём скрипт sync.sh
+
+В нём пишем
+
+```bash
+#!/bin/bash
+sudo rsync -avz /var/www/html/ team_X@192.168.X.2:/var/www/html
+```
+
+Пробуем его запустить через sh sync.sh (если не просит пароль, значит всё хорошо)
+
+Открываем менеджер расписаний через crontab -e
+
+В конце прописываем следующее расписание
+
+```bash
+*/5 * * * * sh /home/team_x/scripts/sync.sh
+```
+
+Это будет запускать скрипт каждые 5 минут
+# ЛУЧШЕ ПОМЕНЯТЬ ЗНАЧЕНИЕ, Т.К. ОЧЕНЬ СТРАННО, ЧТО У ВСЕХ ОДИНАКОВО! ЕСЛИ В ЗАДАНИИ БУДЕТ ВРЕМЯ, ТО СТАВИМ ТО, КОТОРЫЕ НАПИСАНО
+# СГЕНЕРИРОВАТЬ РАСПИСАНИЕ МОЖНО ЧЕРЕЗ https://crontab.guru
+
+### Повторяем все действия на виртуалке 2
+### ВОЗМОЖНО, НО НЕ 100%, НУЖНО СДЕЛАТЬ СИНХРОНИЗАЦИЮ ПАПКИ /var/lib/pgpro/1c-15/data НА МАШИНАХ 3 И 4!
 
