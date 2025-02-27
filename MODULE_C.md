@@ -145,7 +145,7 @@ C:\Apache24\bin\httpd.exe -k restart
 
 * Открываем прошлый гайд и скачиваем Prometheus, но уже под виндовс
 * Папку внутри архива на диск C
-* Скачиваем программу (NSSM)[https://nssm.cc/download]
+* Скачиваем программу [NSSM](https://nssm.cc/download)
 * Папку внутри архива с NSSM на диск C
 * Дальше в cmd или Powershell cd C:\nssm-2.24\win64
 * Потом команду nssm install Prometheus
